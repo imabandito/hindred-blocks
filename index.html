@@ -106,7 +106,11 @@
             });
             block.element.classList.add("correct");
             block.element.classList.remove("wrong");
-            body.insertBefore(block.element, elements[blockId + 1].element);
+            if (blockId + 1 < elements.length) {
+              body.insertBefore(block.element, elements[blockId + 1].element);
+            } else {
+              body.appendChild(block.element);
+            }
 
             shift--;
           }
