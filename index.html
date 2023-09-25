@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hundred blocks</title>
+
+    <style>
+      body {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 8px;
+      }
+
+      .block {
+        height: 100px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid rgb(34, 34, 34);
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .block_index {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.7rem;
+      }
+
+      .correct {
+        background-color: rgb(0, 182, 36);
+      }
+
+      .wrong {
+        background-color: rgb(255, 101, 101);
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      window.onload = () => {
+        const body = document.querySelector("body");
+        let elements = [];
+        let shift = 0;
+
+        //Not efficient, done only for illustration purposes. Instead can just use insertBefore in order to not rerender 100 elements every time
+        const render = () => {
+          body.innerHTML = "";
+          for (let i = 0; i < elements.length; i++) {
+            elements[i].element.querySelector(
+              ".block_index"
+            ).innerText = `[${i}]`;
+
+            body.append(elements[i].element);
+          }
+        };
+
+        generateBlocksAndAppendBody(100);
+
+        body.addEventListener("click", handleBlockClick);
+
+        function generateBlocksAndAppendBody(amount) {
+          for (let i = 0; i < amount; i++) {
+            const element = document.createElement("div");
+            element.innerHTML = `<span class = 'block_index'>[${i}]</span>div #${
+              i + 0
+            }`;
+            element.className = "block correct";
+            element.id = i;
+            elements.push({ element, index: i, inPosition: true });
+            body.appendChild(element);
+          }
+        }
+
+        function handleBlockClick({ target: { id, classList, parentNode } }) {
+          let blockId = null;
+          if (
+            classList.contains("block") ||
+            parentNode.classList.contains("block")
+          ) {
+            blockId = +id || +parentNode.id;
+          } else {
+            return;
+          }
+          const currentIndex = elements.findIndex(
+            (el) => +el.element.id === blockId
+          );
+          const block = elements[currentIndex];
+          if (block.inPosition) {
+            const del = elements.splice(currentIndex, 1);
+            body.insertBefore(block.element, elements[0].element);
+            elements.unshift({ ...block, inPosition: false });
+            block.element.classList.add("wrong");
+            block.element.classList.remove("correct");
+            shift++;
+          } else {
+            elements.splice(currentIndex, 1);
+            elements.splice(blockId, 0, {
+              ...block,
+              inPosition: true,
+            });
+            block.element.classList.add("correct");
+            block.element.classList.remove("wrong");
+            body.insertBefore(block.element, elements[blockId + 1].element);
+
+            shift--;
+          }
+          // If there are no more blocks on wrong position, then sort
+          if (shift === 0) {
+            elements.sort((a, b) => a.index - b.index);
+          }
+          render();
+        }
+      };
+    </script>
+  </body>
+</html>
